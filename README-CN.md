@@ -1,107 +1,117 @@
 # DMM Download Helper
 
 <p align="center">
-  <img src="public/logo-128.png" alt="Logo" width="128">
+<img src="public/logo-128.png" alt="Logo" width="128">
 </p>
 
 <p align="center">
-  <strong>一款简单高效的 DMM 视频下载辅助工具</strong>
+  <strong>一款自动捕获 EME 加密流并下载 DMM/FANZA 视频的桌面应用</strong>
 </p>
 
 <p align="center">
   <a href="README.md">English</a> | <a href="README-JP.md">日本語</a> | 简体中文
 </p>
 
-
 ---
 
-## 📖 项目简介
+## 项目简介
 
-**DMM Download Helper** 是一款专为 DMM (dmm.com / dmm.co.jp) 平台设计的浏览器扩展。它能够自动捕捉视频播放时的 MPD 清单地址以及对应的解密密钥（Widevine/ClearKey），并一键生成 `N_m3u8DL-RE` 的下载命令行。
-
-[查看演示视频](https://image.906732.xyz/output.webm)
+**DMM Download Helper** 是一款基于 Electron 的桌面应用，内置浏览器直接浏览 DMM/FANZA，自动捕获视频播放时的加密媒体流（MPD + Widevine 密钥），并使用 [N_m3u8DL-RE](https://github.com/nilaoda/N_m3u8DL-RE) 进行下载。
 
 > [!NOTE]
-> 本项目仅供学习和研究目的使用，请遵守相关法律法规。
+> 本项目仅供学习和研究用途，请遵守相关法律法规。
 
-## ✨ 核心功能
+## 功能特性
 
-- 🎯 **自动捕获 MPD**：实时监控播放器请求，精准提取视频清单 URL。
-- 🔑 **解密密钥提取**：自动拦截并解析 License 请求，获取解密所需的 KID 和 Key。
-- 🚀 **一键生成命令**：直接生成适配 `N_m3u8DL-RE` 的完整下载命令。
-- 🛠️ **多会话管理**：支持记录多次播放或切换清晰度产生的不同会话（Session）。
-- 🎨 **清爽 UI**：基于 React 构建的现代化弹出窗口（Popup），信息展示一目了然。
+- **内置浏览器** — 直接在应用中浏览 DMM/FANZA，无需安装浏览器扩展。
+- **自动 EME 捕获** — 实时拦截 MPD 清单 URL 和 Widevine/ClearKey 解密密钥。
+- **自动下载** — 捕获到 MPD 和密钥后自动开始下载，播放弹窗自动关闭。
+- **集成解密** — 使用 mp4decrypt 或 shaka-packager 解密受保护的流媒体。
+- **跨平台** — 支持 macOS (arm64) 和 Windows (x64)。
 
-## 🚀 如何使用
+## 下载安装
 
-本项目提供多种使用方式，您可以根据需求选择：
+从 [Releases](https://github.com/ianho7/dmm-download-helper/releases) 页面下载最新版本：
 
-### 1. GitHub Release
-您可以从仓库的 [Releases](https://github.com/ianho7/dmm-download-helper/releases) 页面下载已打包好的 `zip` 文件。
-下载后解压，在 Chrome 中通过“加载已解压的扩展程序”进行安装。
+| 平台 | 文件 |
+| :--- | :--- |
+| macOS (Apple Silicon) | `DMM Download Helper-x.x.x-arm64.dmg` |
+| Windows (x64) | `DMM Download Helper x.x.x.exe`（便携版） |
 
-### 2. 油猴脚本 (Tampermonkey)
-如果您更习惯使用脚本管理器，我们也提供了油猴版（功能可能与扩展版略有差异）：
-[点击前往 GreasyFork 下载](https://greasyfork.org/scripts/563249-dmm-download-helper)
+## 前置要求
 
-### 3. 自行构建
-1. 克隆本项目：
+使用前需安装以下工具并添加到系统 PATH：
+
+### 1. N_m3u8DL-RE（必需）
+
+从 [N_m3u8DL-RE Releases](https://github.com/nilaoda/N_m3u8DL-RE/releases) 下载，放到 PATH 目录中。
+
+### 2. 解密工具（DRM 内容必需）
+
+安装以下**任一**工具：
+
+- [shaka-packager](https://github.com/shaka-project/shaka-packager/releases)（推荐）
+- [mp4decrypt (Bento4)](https://www.bento4.com/downloads/)
+
+### 3. 代理（必需）
+
+DMM 有地域限制（仅限日本），需要能访问 DMM 的代理。启动时设置上游代理：
+
 ```bash
-git clone https://github.com/ianho7/dmm-download-helper.git
+DMM_HELPER_UPSTREAM_PROXY=http://127.0.0.1:7897 bun run desktop
 ```
-2. 安装依赖并构建：
+
+或在系统中设置 `HTTPS_PROXY` / `HTTP_PROXY` 环境变量。
+
+## 使用方法
+
+1. 启动应用
+2. 在内置浏览器中访问 DMM/FANZA 并登录
+3. 进入已购买的视频页面，点击播放
+4. 视频在弹窗中打开 — 应用自动捕获 EME 数据
+5. 捕获到 MPD + 密钥后，自动开始下载并关闭弹窗
+6. 等待下载完成 — 输出为 MP4 文件，保存在下载目录中
+
+## 从源码构建
+
 ```bash
+# 安装依赖
 bun install
-bun run build
+
+# 开发模式运行
+DMM_HELPER_UPSTREAM_PROXY=http://127.0.0.1:7897 bun run desktop
+
+# 打包
+bun run desktop:build:mac   # macOS DMG + ZIP
+bun run desktop:build:win   # Windows 便携版 + ZIP
+bun run desktop:build       # 全平台
 ```
-3. 在 Chrome 中加载 `dist` 目录。
 
----
+## 环境变量
 
-## ⚠️ 注意事项
-
-> [!IMPORTANT]
-> 在开始下载前，请务必阅读以下内容以确保工具正常运行。
-
-### 1. 解密引擎配置
-本工具生成的命令默认使用 **SHAKA_PACKAGER**。
-- **配置步骤**：
-  1. 前往[N_m3u8DL-RE](https://github.com/nilaoda/N_m3u8DL-RE/releases/tag/v0.5.1-beta) 下载`N_m3u8DL-RE`。
-  2. 前往 [shaka-packager releases](https://github.com/shaka-project/shaka-packager/releases) 下载 `packager-win-x64.exe`。
-  3. 将其放置在 `N_m3u8DL-RE.exe` 同一目录下。
-  4. **重命名** 为 `shaka-packager.exe`。
-  5. 目录文件实例
-  <img src="public/dir.png">
-- **故障排除**：若下载后的视频无法播放，请尝试将命令中的引擎后缀更换为 `MP4DECRYPT`。
-
-### 2. 代理设置
-由于 DMM 的地区限制，请确保您的终端环境（CMD/PowerShell/Terminal）已配置好能够访问 DMM 资源的代理（如设置 `HTTP_PROXY` 和 `HTTPS_PROXY` 环境变量）。
-
-### 3. 合法性声明
-本工具仅供学习交流使用，旨在研究 Web 视频加密与传输技术。请勿将其用于任何非法传播或商业用途。请尊重版权，支持正版内容。
-
-## 🛠️ 技术栈
-
-- **前端框架**: React
-- **开发工具**: Vite + CRXJS
-- **样式**: CSS (Vanilla)
-- **脚本拦截**: 原生 JavaScript 注入
-
-## ⚖️ 开源协议
-
-本项目采用 [MIT License](LICENSE) 许可。
-
-## 💖 赞助支持
-
-如果您觉得这个工具为您节省了时间，欢迎请我喝杯咖啡。您的支持是项目持续更新的动力！
-
-| 支付平台 | 支付方式 | 链接 |
+| 变量 | 说明 | 默认值 |
 | :--- | :--- | :--- |
-| **爱发电 (Afdian)** | 微信 / 支付宝 | [👉 点击前往赞助](https://afdian.com/a/ianho7) |
-| **Buy Me a Coffee** | 国际信用卡 / Apple Pay | [👉 点击前往赞助](https://www.buymeacoffee.com/ianho7) |
+| `DMM_HELPER_UPSTREAM_PROXY` | DMM 访问代理 | — |
+| `DL_BIN` | N_m3u8DL-RE 二进制文件路径 | `N_m3u8DL-RE`（从 PATH 查找） |
+| `DOWNLOAD_DIR` | 下载输出目录 | 系统下载目录 |
+| `DMM_HELPER_DECRYPTION_ENGINE` | 解密引擎偏好（`SHAKA_PACKAGER` 或 `MP4DECRYPT`） | `SHAKA_PACKAGER` |
+| `DMM_HELPER_SELECT_VIDEO` | N_m3u8DL-RE 视频流筛选器 | `best`（自动选择） |
+| `DMM_HELPER_SELECT_AUDIO` | N_m3u8DL-RE 音频流筛选器 | `best`（自动选择） |
 
-### ⚖️ 免责声明
-1. **性质定义**：本项目仅供**技术研究与学习交流**使用。作者不提供任何音视频、图片或其他版权受限内容。
-2. **无偿赠予**：所有赞助均为自愿性质的**无偿赠予**，不视为购买任何软件功能、授权或技术支持。
-3. **合规使用**：用户在使用本工具时，必须遵守所在地法律法规及相关平台的服务协议。作者不支持任何侵犯版权的行为。
-4. **责任豁免**：作者不对因使用本工具产生的任何法律纠纷、账号封禁或数据丢失承担责任。
+## 技术栈
+
+- **框架**: Electron 41
+- **EME 拦截**: 通过 webview preload 注入原生 JavaScript
+- **下载引擎**: N_m3u8DL-RE
+- **解密**: mp4decrypt / shaka-packager
+- **构建工具**: electron-builder
+
+## 开源协议
+
+本项目使用 [MIT License](LICENSE) 许可。
+
+## 免责声明
+
+1. 本项目仅供**技术研究和教育**用途。
+2. 使用者必须遵守当地法律和相关平台的服务条款。
+3. 作者不提供任何受版权保护的内容，不对因使用本工具产生的任何法律纠纷承担责任。

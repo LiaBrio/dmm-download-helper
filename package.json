@@ -1,12 +1,19 @@
 {
   "name": "dmm-download-helper",
+  "description": "Desktop app for downloading DMM/FANZA videos with automatic EME capture and decryption",
+  "author": "ianho7",
   "type": "module",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "private": true,
+  "main": "desktop/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "desktop": "electron desktop/main.cjs",
+    "desktop:build": "electron-builder --mac --win",
+    "desktop:build:mac": "electron-builder --mac",
+    "desktop:build:win": "electron-builder --win"
   },
   "dependencies": {
     "react": "^19.1.0",
@@ -19,8 +26,40 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.7.0",
+    "electron": "^41.3.0",
+    "electron-builder": "^26.8.1",
     "typescript": "~5.8.3",
     "vite": "^7.0.5",
     "vite-plugin-zip-pack": "^1.2.4"
+  },
+  "build": {
+    "appId": "com.dmm-download-helper.app",
+    "productName": "DMM Download Helper",
+    "files": [
+      "desktop/**/*.cjs",
+      "desktop/**/*.html",
+      "public/injected.js",
+      "bin/**/*"
+    ],
+    "asarUnpack": [
+      "bin/**/*",
+      "desktop/**/*.cjs"
+    ],
+    "mac": {
+      "target": ["dmg", "zip"],
+      "icon": "build/icon.icns",
+      "category": "public.app-category.utilities"
+    },
+    "win": {
+      "target": [
+        { "target": "portable", "arch": ["x64"] },
+        { "target": "zip", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.png"
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "icon": "build/icon.png"
+    }
   }
 }
